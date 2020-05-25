@@ -21,7 +21,7 @@
 #include <string>
 #include "login.pb.h"
 
-const size_t MYPORT = 7456;
+const size_t MYPORT = 7444;
 const size_t BUFFER_SIZE = 2048;
 
 using std::cout;
@@ -38,15 +38,18 @@ int32_t confirm_password(int fd) {
     login::LoginReply login_reply;
     auto user = login_request.mutable_user();
 
-  while (cnt++ < 3) {
+  while (cnt++ < 1) 
+  {
       memset(sendbuf, 0, sizeof(sendbuf));
       memset(recvbuf, 0, sizeof(recvbuf));
 
       std::cout << "Input username : ";
-      std::getline(std::cin, username);
+      // std::getline(std::cin, username);
+      username="xx";
 
       std::cout << "Input password : ";
-      std::getline(std::cin, password);
+      // std::getline(std::cin, password);
+      password="123";
 
       // TODO(Zheng): encrypto password as base64
       // TODO(Zheng): check whether user name is legal
@@ -55,12 +58,12 @@ int32_t confirm_password(int fd) {
       user->set_password(password);
       // user->SerializeToArray(sendbuf, BUFFER_SIZE);
       login_request.SerializeToArray(sendbuf,BUFFER_SIZE);
-
-      int flag = send(fd,sendbuf,BUFFER_SIZE,0);
+      // 这个发送一次的话s端回复几次
+      int flag = send(fd,sendbuf,BUFFER_SIZE,0); //循环2次
       if (flag <= 0) {
         perror("send failed: ");
         continue;
-    }
+      }
 
     recv(fd, recvbuf, BUFFER_SIZE, 0);
     login_reply.ParseFromArray(recvbuf, BUFFER_SIZE);
@@ -70,6 +73,7 @@ int32_t confirm_password(int fd) {
     } else if (login_reply.msg() == "F") {
       std::cerr << "Wrong Username or Password." << endl;
     }
+    
   }
 
   std::cerr << "Exit for trying many times." << endl;

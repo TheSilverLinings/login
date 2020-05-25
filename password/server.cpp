@@ -13,7 +13,7 @@
 #include <fstream>
 #include <string>
 #include "login.pb.h"
-#define PORT 7456
+#define PORT 7444
 #define QUEUE 20
 #define BUFFER_SIZE 1024
 using std::cout;
@@ -55,17 +55,35 @@ int confirm_user(int fd)
     login::LoginRequest login_request;
     login::LoginReply login_reply;
     // auto user = login_request.mutable_user();
+// 就是这里循环了3次？dui 就是 c 端循环1次,这里循环2次
+// show me the case , run it in bash
+// 运行代码我看看
+// bash可以split, 有
 
-    while(cnt++<3){
-        cout<<cnt<<endl;
+    while(cnt++<3){ //这个是服务端，还要一个bash
+        cout<<cnt<<endl; //ok 怎么打开两个bash
         memset(sendbuf,0,sizeof(sendbuf));
         memset(recvbuf,0,sizeof(recvbuf));
-        recv(fd,recvbuf,BUFFER_SIZE,0);
+        auto status = recv(fd,recvbuf,BUFFER_SIZE,0);
+        cout << "recv complete , status :" << status << endl;
         login_request.ParseFromArray(recvbuf,BUFFER_SIZE);
         auto user = login_request.user();
         username = user.username();
         password = user.password();
-
+        //会不会是这些嵌套消息的语法用错了？
+        // 不会，这个不会导致两次， 第一次应该没接受消息，第二次才接受消息，TCP？ OK，看懂了
+        // 不应该啊。按理说是第一次就收了，第二次没有，你看我给你的截图 对 TCP
+        // 你编译运行下， 有一种情况，你按enter后这个信号被接受，但是没有实际输入，你可以构建默认数据试试
+        // ...原来如此。。。
+       // 你试试 
+       //好像不是这个原因
+       //我来
+       // ok可以了
+       // 我修改前有没有这个问题
+       // 不好说，当时没有测试那么仔细，一遍正确直接通过
+       
+       // 另一次是错误一次，然后正确一次，也能正确通过 //我回去再看看吧，现在太晚了
+       // 如果错误两次，那server就退出了，最后正确也没用 --> 这种情况没有测试
         cout<<login_request.user().username()<<endl;
         cout<<password<<endl;
         bool flag = check_user_pwd(username,password);

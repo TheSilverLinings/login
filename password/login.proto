@@ -3,8 +3,8 @@ syntax = "proto3";
 package login;
 
 message User {
-  string username = 1;
-  string password = 2;
+  string username = 1 [default="abc"];
+  string password = 2 [default="abc"];
 }
 
 message LoginRequest { User user = 1; int32 temp =2;}
