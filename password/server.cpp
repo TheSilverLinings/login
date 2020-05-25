@@ -25,9 +25,9 @@ void thread_task()
 {
 }
 
+// check the username and password from text
 bool check_user_pwd(const std::string &username,const std::string &password)
 {
-    // char euser[20],epassword[20];
     std::string tuser,tpwd;
     std::ifstream ifile;
     ifile.open("up.txt");
@@ -35,10 +35,6 @@ bool check_user_pwd(const std::string &username,const std::string &password)
     {
         ifile>>tuser;
         ifile>>tpwd;
-        // cout<<"euser:"<<euser<<";username:"<<username<<";"<<endl;
-        // cout<<"epassword:"<<epassword<<";password:"<<password<<";"<<endl;
-        // cout<<strcmp(euser,username)<<endl;
-        // cout<<strcmp(epassword,password)<<endl;
         if((tuser==username)&&(tpwd==password))
         {
             ifile.close();
@@ -49,48 +45,47 @@ bool check_user_pwd(const std::string &username,const std::string &password)
     return false;
 }
 
+// confirm the user
 int confirm_user(int fd)
 {
-    login::User user;
-    // char username[20],password[20];
-    std::string username,password;
+    int cnt = 0;
     char sendbuf[BUFFER_SIZE],recvbuf[BUFFER_SIZE];
-    
-    int cnt =0;
-    while(cnt<3)
-    {
+    std::string username,password;
+
+    login::LoginRequest login_request;
+    login::LoginReply login_reply;
+    // auto user = login_request.mutable_user();
+
+    while(cnt++<3){
+        cout<<cnt<<endl;
         memset(sendbuf,0,sizeof(sendbuf));
         memset(recvbuf,0,sizeof(recvbuf));
-        // read(fd, username, sizeof(username));
-        // read(fd, password, sizeof(password));
-        // int len = recv(fd, username, sizeof(username),0);
-        // len = recv(fd, password, sizeof(password),0);
         recv(fd,recvbuf,BUFFER_SIZE,0);
-        user.ParseFromArray(recvbuf,BUFFER_SIZE);
+        login_request.ParseFromArray(recvbuf,BUFFER_SIZE);
+        auto user = login_request.user();
+        username = user.username();
+        password = user.password();
 
-        bool flag = check_user_pwd(user.username(),user.password());
+        cout<<login_request.user().username()<<endl;
+        cout<<password<<endl;
+        bool flag = check_user_pwd(username,password);
+
         if(flag)
         {
-            // strcpy(sendbuf,"T");
-            user.set_msg("T");
+            login_reply.set_msg("T");
+            login_reply.SerializeToArray(sendbuf,BUFFER_SIZE);
+            send(fd,sendbuf,BUFFER_SIZE,0);
             cout<<"User: "<<username<<" log in."<<endl;
-            user.SerializeToArray(sendbuf,BUFFER_SIZE);
-            send(fd,sendbuf,strlen(sendbuf),0);
             break;
         }   
         else
         {
-            // strcpy(sendbuf,"F");
-            user.set_msg("F");
-            user.SerializeToArray(sendbuf,BUFFER_SIZE);
+            login_reply.set_msg("F");
+            login_reply.SerializeToArray(sendbuf,BUFFER_SIZE);
+            send(fd,sendbuf,BUFFER_SIZE,0);
         }    
-
-        // write(fd,sendbuf,sizeof(sendbuf));
-        send(fd,sendbuf,strlen(sendbuf),0);
-
-        cnt++;
+        
     }
-    // printf("%ld",sizeof(sendbuf));
 }
  
 int main()
@@ -187,24 +182,10 @@ int main()
         perror("connect");
         exit(1);
     }
- 
-    // char buffer[1024];
-    // char sendbuf[1024];
 
-    // while(1)
-    // {
     confirm_user(conn);
-        // memset(buffer, 0 ,sizeof(buffer));
-        // // int len = recv(conn, buffer, sizeof(buffer), 0);
-        // int len = read(conn, buffer, sizeof(buffer));
-        // if(strcmp(buffer, "exit\n") == 0)
-        //     break;
-    
-        // printf("%s", buffer);
-        // // send(conn, buffer, len, 0);
-        // write(conn,buffer,len);
-    // }
-    cout<<"congtinue"<<endl;
+
+    cout<<"continue"<<endl;
     while(1)
     close(conn);
     close(ss);
