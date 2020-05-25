@@ -2,9 +2,32 @@ syntax = "proto3";
 
 package login;
 
-message User
-{
-    string username = 1;
-    string password = 2;
-    bytes msg = 3;
+message User {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginRequest { User user = 1; }
+
+message LoginReply {
+  int32 status = 1;
+  string msg = 2;
+  string sha = 3;
+}
+
+message File {
+  string name = 1;
+  uint64 size = 2;
+  bytes content = 3;
+}
+
+// sha 用来做身份校验
+message TransferFilesRequest {
+  string sha = 1;
+  repeated File file = 2;
+}
+
+message TransferFilesReply {
+  int32 status = 1;
+  string msg = 2;
 }
