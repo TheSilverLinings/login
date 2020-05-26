@@ -21,7 +21,7 @@
 #include <string>
 #include "login.pb.h"
 
-const size_t MYPORT = 7444;
+const size_t MYPORT = 4213;
 const size_t BUFFER_SIZE = 2048;
 
 using std::cout;
@@ -38,18 +38,16 @@ int32_t confirm_password(int fd) {
     login::LoginReply login_reply;
     auto user = login_request.mutable_user();
 
-  while (cnt++ < 1) 
+  while (cnt++ < 3) 
   {
       memset(sendbuf, 0, sizeof(sendbuf));
       memset(recvbuf, 0, sizeof(recvbuf));
 
       std::cout << "Input username : ";
-      // std::getline(std::cin, username);
-      username="xx";
+      std::getline(std::cin, username);
 
       std::cout << "Input password : ";
-      // std::getline(std::cin, password);
-      password="123";
+      std::getline(std::cin, password);
 
       // TODO(Zheng): encrypto password as base64
       // TODO(Zheng): check whether user name is legal
@@ -59,7 +57,8 @@ int32_t confirm_password(int fd) {
       // user->SerializeToArray(sendbuf, BUFFER_SIZE);
       login_request.SerializeToArray(sendbuf,BUFFER_SIZE);
       // 这个发送一次的话s端回复几次
-      int flag = send(fd,sendbuf,BUFFER_SIZE,0); //循环2次
+      // cout<<strlen(sendbuf)<<endl;
+      int flag = send(fd,sendbuf,BUFFER_SIZE-1,0); //循环2次
       if (flag <= 0) {
         perror("send failed: ");
         continue;
